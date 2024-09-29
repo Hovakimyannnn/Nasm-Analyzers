@@ -1,0 +1,36 @@
+Lexical Analyze
+Line 1: Successfully
+Line 2: Successfully
+Line 3: Successfully
+Line 4: NewLine
+Line 5: Successfully
+Line 6: Successfully
+Line 7: Successfully
+Line 8: Successfully
+Line 9: Successfully
+Line 10: Successfully
+Line 11: Successfully
+Line 12: Successfully
+Line 13: NewLine
+Line 14: Successfully
+Line 15: NewLine
+Line 16: Successfully
+Line 17: Successfully
+Syntax Analyze and Semantic
+Line 1: Success Section
+Line 2: Unknown Section
+Line 3: Success Label
+Line 4: Success NewLine
+Line 5: Success Label
+Line 6: Syntax Error Source Comma
+Line 7: Error Too Many Arguments Main
+Line 8: Syntax Error
+Line 9: Semantic Error - Cannot use immediate value as destination
+Line 10: Success Label
+Line 11: Success Href Label
+Line 12: Semantic Error - Cannot use immediate value as destination
+Line 13: Success NewLine
+Line 14: Success Label
+Line 15: Success NewLine
+Line 16: Success Label
+Line 17: Semantic Error - Cannot use immediate value as destination

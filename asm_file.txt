@@ -1,0 +1,17 @@
+section .text
+section .chlp
+global _start:
+
+_start:
+    mov eax ebx,
+    mov ebx, ecx, edx
+    add eax, aaa
+    sub 10, ebx
+    _rtyq:
+    jmp _rtyq:
+    sub 1, eax
+
+global chlp
+
+chlp
+    mov 8, eax
