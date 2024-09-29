@@ -13,6 +13,74 @@ char *registers_comma_new_line[] = {"eax,\n", "ebx,\n", "ecx,\n", "edx,\n","esi,
 char *directives[] = {".data\n", ".text\n", ".bss\n"}; 
 char global_label[128];
 
+
+//-------------------------Start-Syntax-Functions---------------------------//
+int is_label_syntax(char *buffer, char *global_label) {
+    return strcmp(buffer, global_label) == 0;
+}
+
+int is_register_comma_syntax(char *buffer) {
+    for (int i = 0; i < REGISTER_COUNT; i++) {
+        if (strcmp(buffer, registers_comma[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int is_instruction_syntax(char *buffer) {
+    for (int i = 0; i < INSTRUCTIONS; i++) {
+        if (strcmp(buffer, nasm_instructions[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int is_number_comma_syntax(char *buffer) {
+    for (int i = 0; i < strlen(buffer) - 1; i++) {
+        if (buffer[i] < '0' || buffer[i] > '9') {
+            if(buffer[i] == '-') {
+                continue;
+            }
+            return 0;
+        }
+    }
+    return buffer[strlen(buffer) - 3] != ',';
+}
+
+int is_number_syntax(char *buffer) {
+    for (int i = 0; i < strlen(buffer); i++) {
+        if (buffer[i] < '0' || buffer[i] > '9') {
+            if(buffer[i] == '-') {
+                continue;
+            }
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int is_register_syntax(char *buffer) {
+    for (int i = 0; i < REGISTER_COUNT; i++) {
+        if (strcmp(buffer, registers[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+int is_register_comma_new_line(char *buffer) {
+    for (int i = 0; i < INSTRUCTIONS; i++) {
+        if (strcmp(buffer, registers_comma_new_line[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+//---------------------------------End-Syntax-Functions----------------------------------//
+
+
+//---------------------------------Start-Analyze-Functions----------------------------------//
 int is_register(char *buffer, Token *obj) {
     for (int i = 0; i < REGISTER_COUNT; i++) {
         if (strncmp(buffer, registers[i], strlen(registers[i])) == 0) {
@@ -119,6 +187,18 @@ int find_character_in_last_place(const char *str, char ch) {
 
     return -1; 
 }
+int is_instruction_label(char *buffer) {
+    for(int i = 0; i < INSTRUCTIONS; i++) {
+        if(strcmp(buffer,nams_inst_with_jmp[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+//------------------------------End--Analyzer-Functions-----------------------------//
+
+
 void analyzer(char *buffer, FILE *error_file, Token *obj, Labels *label) {
     int index = 0, args_count = 0;
     char *args[256];
@@ -154,11 +234,15 @@ void analyzer(char *buffer, FILE *error_file, Token *obj, Labels *label) {
         obj[tokens_count].line_number = line_count + 1;
         strcpy(obj[tokens_count].lexeme, buffer);
         tokens_count++;
-       
         return;
     }
+
     while (args_count != index) {
         if(index == 1) {
+            if(is_instruction_syntax(args[args_count]) || is_register_syntax(args[args_count]) || is_number_syntax(args[args_count])) {
+                fprintf(error_file,"Line %d: Successfully\n",line_count + 1);
+                return;
+            }
             int res = find_character_in_last_place(args[args_count],':');
             if(res != -1) {
                 fprintf(error_file, "Line %d: Unknown Symbol\n",line_count + 1);
@@ -256,69 +340,6 @@ void lexical_analyzer(FILE *file_asm, FILE *file_error, Token *token,Labels *lab
     }
 }
 
-//-------------------------Syntax---------------------------//
-int is_label_syntax(char *buffer, char *global_label) {
-    return strcmp(buffer, global_label) == 0;
-}
-
-int is_register_comma_syntax(char *buffer) {
-    for (int i = 0; i < REGISTER_COUNT; i++) {
-        if (strcmp(buffer, registers_comma[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int is_instruction_syntax(char *buffer) {
-    for (int i = 0; i < INSTRUCTIONS; i++) {
-        if (strcmp(buffer, nasm_instructions[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int is_number_comma_syntax(char *buffer) {
-    for (int i = 0; i < strlen(buffer) - 1; i++) {
-        if (buffer[i] < '0' || buffer[i] > '9') {
-            if(buffer[i] == '-') {
-                continue;
-            }
-            return 0;
-        }
-    }
-    return buffer[strlen(buffer) - 3] != ',';
-}
-
-int is_number_syntax(char *buffer) {
-    for (int i = 0; i < strlen(buffer); i++) {
-        if (buffer[i] < '0' || buffer[i] > '9') {
-            if(buffer[i] == '-') {
-                continue;
-            }
-            return 0;
-        }
-    }
-    return 1;
-}
-
-int is_register_syntax(char *buffer) {
-    for (int i = 0; i < REGISTER_COUNT; i++) {
-        if (strcmp(buffer, registers[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-int is_register_comma_new_line(char *buffer) {
-    for (int i = 0; i < INSTRUCTIONS; i++) {
-        if (strcmp(buffer, registers_comma_new_line[i]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
 void syntax_analyzer(char *buffer, FILE *file_error, Labels *label) {
     if(*buffer == '\n') {
         fprintf(file_error, "Line %d: Success NewLine\n", line_count + 1);
@@ -337,6 +358,16 @@ void syntax_analyzer(char *buffer, FILE *file_error, Labels *label) {
         return;
     }
     if (index == 1) {
+        if(is_instruction_label(args[args_count])) {
+            fprintf(file_error,"Line %d: Instruction Cant Be Label\n",line_count + 1);
+            return;
+        }else if(is_register_syntax(args[args_count]) ) {
+            fprintf(file_error, "Line %d: Register Cant be Label\n",line_count + 1);
+            return;
+        }else if(is_number_syntax(args[args_count])) {
+            fprintf(file_error, "Line %d: Number  Cant be Label\n",line_count + 1);
+            return;
+        }
         int flag = 0;
         for (int i = 0; i < labels_count; i++) {
             if (strcmp(label[i].label, args[args_count]) == 0) {
@@ -433,7 +464,7 @@ void syntax_analyzer(char *buffer, FILE *file_error, Labels *label) {
                 return;
             }
             args_count++;
-            if(is_register_syntax(args[args_count]) == 0 || is_number_syntax(args[args_count]) == 0) {
+            if(is_register_syntax(args[args_count]) || is_number_syntax(args[args_count])) {
                 fprintf(file_error, "Line %d: Syntax Error\n", line_count + 1);
                 return;
             }
