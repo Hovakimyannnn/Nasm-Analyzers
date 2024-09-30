@@ -241,6 +241,10 @@ void analyzer(char *buffer, FILE *error_file, Token *obj, Labels *label) {
         if(index == 1) {
             if(is_instruction_syntax(args[args_count]) || is_register_syntax(args[args_count]) || is_number_syntax(args[args_count])) {
                 fprintf(error_file,"Line %d: Successfully\n",line_count + 1);
+                obj[tokens_count].type = TOKEN_LABEL_DEF;
+                obj[tokens_count].line_number = line_count + 1;
+                strcpy(obj[tokens_count].lexeme, buffer);
+                tokens_count++;
                 return;
             }
             int res = find_character_in_last_place(args[args_count],':');
